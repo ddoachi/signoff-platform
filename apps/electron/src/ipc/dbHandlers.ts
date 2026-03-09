@@ -80,8 +80,11 @@ export function registerDbHandlers(): void {
   );
 
   // ── Phase 2-5: 연결 풀 상태 조회 (디버깅용) ──
-  ipcMain.handle('db:pool-status', () => ({
-    ok: true,
-    data: poolStatus(),
-  }));
+  ipcMain.handle('db:pool-status', () => {
+    try {
+      return { ok: true, data: poolStatus() };
+    } catch (err) {
+      return { ok: false, error: pgErrorToDbError(err) };
+    }
+  });
 }

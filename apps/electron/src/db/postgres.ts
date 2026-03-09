@@ -31,9 +31,41 @@ export function getPool(): Pool {
   return pool;
 }
 
+// ── SQL identifier 검증 ────────────────────────────────────
+
+const SAFE_IDENTIFIER = /^[a-zA-Z_][a-zA-Z0-9_.]*$/;
+
+function validateIdentifiers(table: string, columns: string[]): void {
+  if (!SAFE_IDENTIFIER.test(table)) {
+    throw new Error(`Invalid table identifier: ${table}`);
+  }
+  for (const col of columns) {
+    if (!SAFE_IDENTIFIER.test(col)) {
+      throw new Error(`Invalid column identifier: ${col}`);
+    }
+  }
+}
+
+// ── CSV 값 이스케이프 (RFC 4180) ───────────────────────────
+
+function csvEscape(v: unknown): string {
+  if (v == null) return '';
+  const s = String(v);
+  if (s.includes(',') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
 // ── Phase 2-1: 구조화된 에러 처리 ──────────────────────────
 
 export function pgErrorToDbError(err: unknown): DbError {
+  if (!(err instanceof Error)) {
+    return { code: 'UNKNOWN', message: String(err) };
+  }
+  if (!('code' in err) || typeof (err as Record<string, unknown>).code !== 'string') {
+    return { code: 'UNKNOWN', message: err.message };
+  }
   const pgErr = err as DatabaseError;
   return {
     code: pgErr.code ?? 'UNKNOWN',
@@ -76,7 +108,11 @@ export async function transaction<T>(
     await client.query('COMMIT');
     return result;
   } catch (err) {
-    await client.query('ROLLBACK');
+    try {
+      await client.query('ROLLBACK');
+    } catch {
+      // ROLLBACK 실패 시 원본 에러를 우선 전달
+    }
     throw err;
   } finally {
     client.release();
@@ -104,17 +140,18 @@ export async function bulkInsert(
   rows: unknown[][],
 ): Promise<number> {
   if (rows.length === 0) return 0;
+  validateIdentifiers(table, columns);
 
   const client = await getPool().connect();
   try {
     const copySQL = `COPY ${table} (${columns.join(',')}) FROM STDIN WITH (FORMAT csv)`;
     const stream = client.query(copyFrom(copySQL));
     const csvLines = rows.map((row) =>
-      row.map((v) => (v == null ? '' : String(v))).join(','),
+      row.map((v) => csvEscape(v)).join(','),
     );
     const readable = Readable.from(csvLines.map((line) => line + '\n'));
     await pipeline(readable, stream);
-    return rows.length;
+    return (stream as unknown as { rowCount: number }).rowCount ?? rows.length;
   } finally {
     client.release();
   }
@@ -127,6 +164,8 @@ export async function importCsv(
   columns: string[],
   csvFilePath: string,
 ): Promise<void> {
+  validateIdentifiers(table, columns);
+
   const client = await getPool().connect();
   try {
     const copySQL = `COPY ${table} (${columns.join(',')}) FROM STDIN WITH (FORMAT csv, HEADER true)`;
