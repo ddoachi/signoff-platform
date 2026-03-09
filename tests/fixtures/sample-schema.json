@@ -1,0 +1,84 @@
+[
+  {
+    "schema": "public",
+    "name": "sorv_task",
+    "columns": [
+      {
+        "name": "id",
+        "pgType": "int4",
+        "nullable": false,
+        "isPrimaryKey": true,
+        "hasDefault": true
+      },
+      {
+        "name": "sorv_path",
+        "pgType": "text",
+        "nullable": false,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "status",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": true
+      },
+      {
+        "name": "created_at",
+        "pgType": "timestamptz",
+        "nullable": false,
+        "isPrimaryKey": false,
+        "hasDefault": true
+      }
+    ]
+  },
+  {
+    "schema": "public",
+    "name": "user_profile",
+    "columns": [
+      {
+        "name": "user_id",
+        "pgType": "uuid",
+        "nullable": false,
+        "isPrimaryKey": true,
+        "hasDefault": true
+      },
+      {
+        "name": "display_name",
+        "pgType": "varchar",
+        "nullable": false,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "email",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "role",
+        "pgType": "text",
+        "nullable": false,
+        "isPrimaryKey": false,
+        "hasDefault": true
+      },
+      {
+        "name": "metadata",
+        "pgType": "jsonb",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "updated_at",
+        "pgType": "timestamptz",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": true
+      }
+    ]
+  }
+]
