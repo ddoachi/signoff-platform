@@ -1,0 +1,17 @@
+{
+  "name": "@signoff/electron-db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Electron main-process DB layer — PostgreSQL pool, error handling, transactions, bulk insert, CSV import",
+  "dependencies": {
+    "pg": "^8.13.1",
+    "pg-copy-streams": "^6.0.6"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.10",
+    "@types/pg-copy-streams": "^1.2.5",
+    "electron": "^33.0.0",
+    "typescript": "^5.7.2"
+  }
+}
