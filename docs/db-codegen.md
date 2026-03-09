@@ -12,7 +12,7 @@ codegen script (Node.ts)
     ↓  (template → file write)
 ├── generated/db/types.ts        ← Row / Insert / Update 타입
 ├── generated/db/queryKeys.ts    ← query key factory
-└── generated/db/hooks.ts        ← useXxxList, useInsertXxx, useUpdateXxx, useDeleteXxx
+└── generated/db/hooks.ts        ← useXxxList, useInsertXxx, useUpdateXxx, useDeleteXxx, useBulkInsertXxx
 ```
 
 ---
@@ -22,7 +22,7 @@ codegen script (Node.ts)
 | Phase | 범위 | 상태 |
 |-------|------|------|
 | **Phase 1** | Codegen 코어 — introspection, 타입/hook 생성, dry-run, 테스트 | ✅ 완료 |
-| **Phase 2** | Electron DB 레이어 강화 — 에러 처리, 트랜잭션, bulk insert, CSV import, pool 관리 | 🔲 미구현 |
+| **Phase 2** | Electron DB 레이어 강화 — 에러 처리, 트랜잭션, bulk insert, CSV import, pool 관리 | ✅ 완료 |
 
 ---
 
@@ -244,7 +244,7 @@ fixture 기반으로 generators의 출력을 검증:
 
 ---
 
-# Phase 2: Electron DB 레이어 강화 🔲
+# Phase 2: Electron DB 레이어 강화 ✅
 
 Phase 1의 codegen은 기존 `window.electronApi.dbApi.query()`를 그대로 사용한다.
 Phase 2에서는 Electron main process의 DB 레이어를 강화하여 새로운 IPC 채널을 추가하고,
