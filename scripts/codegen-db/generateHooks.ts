@@ -142,6 +142,29 @@ export function generateHooks(tables: TableMeta[]): string {
       lines.push('}');
       lines.push('');
     }
+
+    // ── useBulkInsertXxx ── (Phase 2-6)
+    if (insertCols.length > 0) {
+      lines.push(`export function useBulkInsert${pascal}() {`);
+      lines.push('  const qc = useQueryClient();');
+      lines.push('  return useMutation({');
+      lines.push(`    mutationFn: (rows: ${pascal}Insert[]) =>`);
+      lines.push('      window.electronApi.dbApi.bulkInsert(');
+      lines.push(`        '${fqn}',`);
+      lines.push(
+        `        [${insertCols.map((c) => `'${c.name}'`).join(', ')}],`,
+      );
+      lines.push(
+        `        rows.map(r => [${insertCols.map((c) => `r.${c.name}`).join(', ')}]),`,
+      );
+      lines.push('      ),');
+      lines.push(
+        `    onSuccess: () => qc.invalidateQueries({ queryKey: dbKeys.${camel}.all }),`,
+      );
+      lines.push('  });');
+      lines.push('}');
+      lines.push('');
+    }
   }
 
   return lines.join('\n');

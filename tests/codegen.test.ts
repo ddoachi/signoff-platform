@@ -158,4 +158,32 @@ describe('generateHooks', () => {
       "INSERT INTO public.sorv_task (sorv_path) VALUES ($1)",
     );
   });
+
+  // ── Phase 2-6: Bulk Insert hook ──
+
+  it('BulkInsert hook 생성', () => {
+    expect(output).toContain('export function useBulkInsertSorvTask()');
+    expect(output).toContain('export function useBulkInsertUserProfile()');
+  });
+
+  it('BulkInsert hook은 dbApi.bulkInsert 호출', () => {
+    expect(output).toContain('window.electronApi.dbApi.bulkInsert(');
+  });
+
+  it('BulkInsert hook은 Insert 타입 배열을 받음', () => {
+    expect(output).toContain('(rows: SorvTaskInsert[])');
+    expect(output).toContain('(rows: UserProfileInsert[])');
+  });
+
+  it('BulkInsert hook은 non-default 컬럼만 매핑', () => {
+    // sorv_task: insertCols = [sorv_path]
+    expect(output).toContain("'sorv_path'");
+    expect(output).toContain('rows.map(r => [r.sorv_path])');
+  });
+
+  it('BulkInsert hook은 invalidateQueries 포함', () => {
+    // bulkInsert도 onSuccess에서 invalidate
+    const bulkSection = output.slice(output.indexOf('useBulkInsertSorvTask'));
+    expect(bulkSection).toContain('qc.invalidateQueries');
+  });
 });
