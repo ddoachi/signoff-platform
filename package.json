@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "db:generate": "tsx scripts/codegen-db/index.ts",
+    "db:generate:prod": "tsx scripts/codegen-db/index.ts --env=production",
     "db:generate:dry-run": "tsx scripts/codegen-db/index.ts --dry-run",
     "test": "vitest run",
     "test:watch": "vitest"
