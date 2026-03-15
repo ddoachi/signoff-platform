@@ -9,12 +9,17 @@ import { generateQueryKeys } from '../scripts/codegen-db/generateQueryKeys.js';
 import { generateHooks } from '../scripts/codegen-db/generateHooks.js';
 
 // ── fixture 로드 ──
-const fixture: TableMeta[] = JSON.parse(
+const allFixtures: TableMeta[] = JSON.parse(
   fs.readFileSync(
     path.resolve(__dirname, 'fixtures/sample-schema.json'),
     'utf-8',
   ),
 );
+
+// 기존 테스트 호환: 테이블만 필터
+const fixture = allFixtures.filter((t) => !t.isView);
+// View만 필터
+const viewFixture = allFixtures.filter((t) => t.isView);
 
 describe('naming', () => {
   it('snake_case → PascalCase', () => {
@@ -92,6 +97,38 @@ describe('generateTypes', () => {
   });
 });
 
+describe('generateTypes — view', () => {
+  const output = generateTypes(viewFixture);
+
+  it('View는 Row 타입만 생성', () => {
+    expect(output).toContain('export interface VPipelineStatusRow {');
+    expect(output).toContain('productid: string | null;');
+    expect(output).toContain('pipeline_status: string | null;');
+    expect(output).toContain('count: number | null;');
+  });
+
+  it('View는 Insert/Update 타입을 생성하지 않음', () => {
+    expect(output).not.toContain('VPipelineStatusInsert');
+    expect(output).not.toContain('VPipelineStatusUpdate');
+    expect(output).not.toContain('VToolDistributionInsert');
+  });
+});
+
+describe('generateTypes — mixed tables and views', () => {
+  const output = generateTypes(allFixtures);
+
+  it('테이블은 Row/Insert/Update 모두 생성', () => {
+    expect(output).toContain('export interface SorvTaskRow {');
+    expect(output).toContain('export interface SorvTaskInsert {');
+    expect(output).toContain('export type SorvTaskUpdate');
+  });
+
+  it('View는 Row만 생성', () => {
+    expect(output).toContain('export interface VPipelineStatusRow {');
+    expect(output).not.toContain('VPipelineStatusInsert');
+  });
+});
+
 describe('generateQueryKeys', () => {
   const output = generateQueryKeys(fixture);
 
@@ -110,6 +147,15 @@ describe('generateQueryKeys', () => {
     expect(output).toContain(
       "byId: (id: string) => ['user_profile', id] as const,",
     );
+  });
+});
+
+describe('generateQueryKeys — view', () => {
+  const output = generateQueryKeys(viewFixture);
+
+  it('View는 all 키만 생성 (byId 없음)', () => {
+    expect(output).toContain("all: ['v_pipeline_status'] as const,");
+    expect(output).not.toContain("byId");
   });
 });
 
@@ -185,5 +231,47 @@ describe('generateHooks', () => {
     // bulkInsert도 onSuccess에서 invalidate
     const bulkSection = output.slice(output.indexOf('useBulkInsertSorvTask'));
     expect(bulkSection).toContain('qc.invalidateQueries');
+  });
+});
+
+describe('generateHooks — view', () => {
+  const output = generateHooks(viewFixture);
+
+  it('View는 List hook만 생성', () => {
+    expect(output).toContain('export function useVPipelineStatusList()');
+    expect(output).toContain('export function useVToolDistributionList()');
+  });
+
+  it('View는 mutation hook을 생성하지 않음', () => {
+    expect(output).not.toContain('useInsertVPipelineStatus');
+    expect(output).not.toContain('useUpdateVPipelineStatus');
+    expect(output).not.toContain('useDeleteVPipelineStatus');
+    expect(output).not.toContain('useBulkInsertVPipelineStatus');
+  });
+
+  it('View hook은 ORDER BY 없이 SELECT', () => {
+    expect(output).toContain("'SELECT * FROM dashboard.v_pipeline_status'");
+  });
+
+  it('View type import에 Insert/Update 없음', () => {
+    expect(output).toContain('VPipelineStatusRow');
+    expect(output).not.toContain('VPipelineStatusInsert');
+    expect(output).not.toContain('VPipelineStatusUpdate');
+  });
+});
+
+describe('generateHooks — mixed tables and views', () => {
+  const output = generateHooks(allFixtures);
+
+  it('테이블은 모든 CRUD hook 생성', () => {
+    expect(output).toContain('useInsertSorvTask');
+    expect(output).toContain('useUpdateSorvTask');
+    expect(output).toContain('useDeleteSorvTask');
+    expect(output).toContain('useBulkInsertSorvTask');
+  });
+
+  it('View는 List hook만 생성', () => {
+    expect(output).toContain('useVPipelineStatusList');
+    expect(output).not.toContain('useInsertVPipelineStatus');
   });
 });
