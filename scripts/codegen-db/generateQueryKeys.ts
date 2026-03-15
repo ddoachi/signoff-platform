@@ -20,7 +20,8 @@ export function generateQueryKeys(tables: TableMeta[]): string {
     lines.push(`  ${camel}: {`);
     lines.push(`    all: ['${table.name}'] as const,`);
 
-    if (pk) {
+    // View는 PK가 없으므로 byId를 생성하지 않음
+    if (pk && !table.isView) {
       lines.push(
         `    byId: (id: ${pkTsType}) => ['${table.name}', id] as const,`,
       );

@@ -12,4 +12,6 @@ export interface TableMeta {
   schema: string;
   name: string;
   columns: ColumnMeta[];
+  /** view인 경우 true (read-only — Row 타입 + List hook만 생성) */
+  isView?: boolean;
 }
