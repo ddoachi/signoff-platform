@@ -12,7 +12,7 @@ export function generateTypes(tables: TableMeta[]): string {
   ];
 
   for (const table of tables) {
-    const pascal = toPascalCase(table.name);
+    const pascal = toPascalCase(table.schema) + toPascalCase(table.name);
 
     // ── Row 타입 (SELECT 결과) ──
     lines.push(`/** ${table.schema}.${table.name} — Row (SELECT 결과) */`);

@@ -68,8 +68,8 @@ describe('generateTypes', () => {
     expect(output).toContain('DO NOT EDIT');
   });
 
-  it('Row 인터페이스 생성', () => {
-    expect(output).toContain('export interface SorvTaskRow {');
+  it('Row 인터페이스 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicSorvTaskRow {');
     expect(output).toContain('id: number;');
     expect(output).toContain('sorv_path: string;');
   });
@@ -78,54 +78,54 @@ describe('generateTypes', () => {
     expect(output).toContain('status: string | null;');
   });
 
-  it('Insert 타입: PK/default는 optional', () => {
-    expect(output).toContain('export interface SorvTaskInsert {');
+  it('Insert 타입: PK/default는 optional (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicSorvTaskInsert {');
     expect(output).toContain('id?: number;');
     expect(output).toContain('sorv_path: string;');
     expect(output).toContain('created_at?: string;');
   });
 
-  it('Update 타입은 Partial<Insert>', () => {
+  it('Update 타입은 Partial<Insert> (스키마 접두사 포함)', () => {
     expect(output).toContain(
-      'export type SorvTaskUpdate = Partial<SorvTaskInsert>;',
+      'export type PublicSorvTaskUpdate = Partial<PublicSorvTaskInsert>;',
     );
   });
 
-  it('여러 테이블 모두 생성', () => {
-    expect(output).toContain('export interface UserProfileRow {');
-    expect(output).toContain('export interface UserProfileInsert {');
+  it('여러 테이블 모두 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicUserProfileRow {');
+    expect(output).toContain('export interface PublicUserProfileInsert {');
   });
 });
 
 describe('generateTypes — view', () => {
   const output = generateTypes(viewFixture);
 
-  it('View는 Row 타입만 생성', () => {
-    expect(output).toContain('export interface VPipelineStatusRow {');
+  it('View는 Row 타입만 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface DashboardVPipelineStatusRow {');
     expect(output).toContain('productid: string | null;');
     expect(output).toContain('pipeline_status: string | null;');
     expect(output).toContain('count: number | null;');
   });
 
   it('View는 Insert/Update 타입을 생성하지 않음', () => {
-    expect(output).not.toContain('VPipelineStatusInsert');
-    expect(output).not.toContain('VPipelineStatusUpdate');
-    expect(output).not.toContain('VToolDistributionInsert');
+    expect(output).not.toContain('DashboardVPipelineStatusInsert');
+    expect(output).not.toContain('DashboardVPipelineStatusUpdate');
+    expect(output).not.toContain('DashboardVToolDistributionInsert');
   });
 });
 
 describe('generateTypes — mixed tables and views', () => {
   const output = generateTypes(allFixtures);
 
-  it('테이블은 Row/Insert/Update 모두 생성', () => {
-    expect(output).toContain('export interface SorvTaskRow {');
-    expect(output).toContain('export interface SorvTaskInsert {');
-    expect(output).toContain('export type SorvTaskUpdate');
+  it('테이블은 Row/Insert/Update 모두 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicSorvTaskRow {');
+    expect(output).toContain('export interface PublicSorvTaskInsert {');
+    expect(output).toContain('export type PublicSorvTaskUpdate');
   });
 
-  it('View는 Row만 생성', () => {
-    expect(output).toContain('export interface VPipelineStatusRow {');
-    expect(output).not.toContain('VPipelineStatusInsert');
+  it('View는 Row만 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface DashboardVPipelineStatusRow {');
+    expect(output).not.toContain('DashboardVPipelineStatusInsert');
   });
 });
 
@@ -136,16 +136,16 @@ describe('generateQueryKeys', () => {
     expect(output).toContain('export const dbKeys = {');
   });
 
-  it('테이블별 all/byId 키 생성', () => {
-    expect(output).toContain("all: ['sorv_task'] as const,");
+  it('테이블별 all/byId 키 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain("all: ['public.sorv_task'] as const,");
     expect(output).toContain(
-      "byId: (id: number) => ['sorv_task', id] as const,",
+      "byId: (id: number) => ['public.sorv_task', id] as const,",
     );
   });
 
-  it('uuid PK는 string 타입', () => {
+  it('uuid PK는 string 타입 (스키마 접두사 포함)', () => {
     expect(output).toContain(
-      "byId: (id: string) => ['user_profile', id] as const,",
+      "byId: (id: string) => ['public.user_profile', id] as const,",
     );
   });
 });
@@ -154,7 +154,7 @@ describe('generateQueryKeys — view', () => {
   const output = generateQueryKeys(viewFixture);
 
   it('View는 all 키만 생성 (byId 없음)', () => {
-    expect(output).toContain("all: ['v_pipeline_status'] as const,");
+    expect(output).toContain("all: ['dashboard.v_pipeline_status'] as const,");
     expect(output).not.toContain("byId");
   });
 });
@@ -168,28 +168,28 @@ describe('generateHooks', () => {
     );
   });
 
-  it('List hook 생성', () => {
-    expect(output).toContain('export function useSorvTaskList()');
-    expect(output).toContain('export function useUserProfileList()');
+  it('List hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function usePublicSorvTaskList()');
+    expect(output).toContain('export function usePublicUserProfileList()');
   });
 
-  it('ById hook 생성', () => {
-    expect(output).toContain('export function useSorvTaskById(id: number)');
-    expect(output).toContain('export function useUserProfileById(id: string)');
+  it('ById hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function usePublicSorvTaskById(id: number)');
+    expect(output).toContain('export function usePublicUserProfileById(id: string)');
   });
 
-  it('Insert hook 생성', () => {
-    expect(output).toContain('export function useInsertSorvTask()');
-    expect(output).toContain('(input: SorvTaskInsert)');
+  it('Insert hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useInsertPublicSorvTask()');
+    expect(output).toContain('(input: PublicSorvTaskInsert)');
   });
 
-  it('Update hook 생성', () => {
-    expect(output).toContain('export function useUpdateSorvTask()');
-    expect(output).toContain('SorvTaskUpdate & { id: number }');
+  it('Update hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useUpdatePublicSorvTask()');
+    expect(output).toContain('PublicSorvTaskUpdate & { id: number }');
   });
 
-  it('Delete hook 생성', () => {
-    expect(output).toContain('export function useDeleteSorvTask()');
+  it('Delete hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useDeletePublicSorvTask()');
     expect(output).toContain("'DELETE FROM public.sorv_task WHERE id = $1'");
   });
 
@@ -207,18 +207,18 @@ describe('generateHooks', () => {
 
   // ── Phase 2-6: Bulk Insert hook ──
 
-  it('BulkInsert hook 생성', () => {
-    expect(output).toContain('export function useBulkInsertSorvTask()');
-    expect(output).toContain('export function useBulkInsertUserProfile()');
+  it('BulkInsert hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useBulkInsertPublicSorvTask()');
+    expect(output).toContain('export function useBulkInsertPublicUserProfile()');
   });
 
   it('BulkInsert hook은 dbApi.bulkInsert 호출', () => {
     expect(output).toContain('window.electronApi.dbApi.bulkInsert(');
   });
 
-  it('BulkInsert hook은 Insert 타입 배열을 받음', () => {
-    expect(output).toContain('(rows: SorvTaskInsert[])');
-    expect(output).toContain('(rows: UserProfileInsert[])');
+  it('BulkInsert hook은 Insert 타입 배열을 받음 (스키마 접두사 포함)', () => {
+    expect(output).toContain('(rows: PublicSorvTaskInsert[])');
+    expect(output).toContain('(rows: PublicUserProfileInsert[])');
   });
 
   it('BulkInsert hook은 non-default 컬럼만 매핑', () => {
@@ -229,7 +229,7 @@ describe('generateHooks', () => {
 
   it('BulkInsert hook은 invalidateQueries 포함', () => {
     // bulkInsert도 onSuccess에서 invalidate
-    const bulkSection = output.slice(output.indexOf('useBulkInsertSorvTask'));
+    const bulkSection = output.slice(output.indexOf('useBulkInsertPublicSorvTask'));
     expect(bulkSection).toContain('qc.invalidateQueries');
   });
 });
@@ -237,16 +237,16 @@ describe('generateHooks', () => {
 describe('generateHooks — view', () => {
   const output = generateHooks(viewFixture);
 
-  it('View는 List hook만 생성', () => {
-    expect(output).toContain('export function useVPipelineStatusList()');
-    expect(output).toContain('export function useVToolDistributionList()');
+  it('View는 List hook만 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useDashboardVPipelineStatusList()');
+    expect(output).toContain('export function useDashboardVToolDistributionList()');
   });
 
   it('View는 mutation hook을 생성하지 않음', () => {
-    expect(output).not.toContain('useInsertVPipelineStatus');
-    expect(output).not.toContain('useUpdateVPipelineStatus');
-    expect(output).not.toContain('useDeleteVPipelineStatus');
-    expect(output).not.toContain('useBulkInsertVPipelineStatus');
+    expect(output).not.toContain('useInsertDashboardVPipelineStatus');
+    expect(output).not.toContain('useUpdateDashboardVPipelineStatus');
+    expect(output).not.toContain('useDeleteDashboardVPipelineStatus');
+    expect(output).not.toContain('useBulkInsertDashboardVPipelineStatus');
   });
 
   it('View hook은 ORDER BY 없이 SELECT', () => {
@@ -254,24 +254,24 @@ describe('generateHooks — view', () => {
   });
 
   it('View type import에 Insert/Update 없음', () => {
-    expect(output).toContain('VPipelineStatusRow');
-    expect(output).not.toContain('VPipelineStatusInsert');
-    expect(output).not.toContain('VPipelineStatusUpdate');
+    expect(output).toContain('DashboardVPipelineStatusRow');
+    expect(output).not.toContain('DashboardVPipelineStatusInsert');
+    expect(output).not.toContain('DashboardVPipelineStatusUpdate');
   });
 });
 
 describe('generateHooks — mixed tables and views', () => {
   const output = generateHooks(allFixtures);
 
-  it('테이블은 모든 CRUD hook 생성', () => {
-    expect(output).toContain('useInsertSorvTask');
-    expect(output).toContain('useUpdateSorvTask');
-    expect(output).toContain('useDeleteSorvTask');
-    expect(output).toContain('useBulkInsertSorvTask');
+  it('테이블은 모든 CRUD hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('useInsertPublicSorvTask');
+    expect(output).toContain('useUpdatePublicSorvTask');
+    expect(output).toContain('useDeletePublicSorvTask');
+    expect(output).toContain('useBulkInsertPublicSorvTask');
   });
 
-  it('View는 List hook만 생성', () => {
-    expect(output).toContain('useVPipelineStatusList');
-    expect(output).not.toContain('useInsertVPipelineStatus');
+  it('View는 List hook만 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('useDashboardVPipelineStatusList');
+    expect(output).not.toContain('useInsertDashboardVPipelineStatus');
   });
 });
