@@ -63,8 +63,8 @@ describe('generateTypes', () => {
     expect(output).toContain('DO NOT EDIT');
   });
 
-  it('Row 인터페이스 생성', () => {
-    expect(output).toContain('export interface SorvTaskRow {');
+  it('Row 인터페이스 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicSorvTaskRow {');
     expect(output).toContain('id: number;');
     expect(output).toContain('sorv_path: string;');
   });
@@ -73,22 +73,22 @@ describe('generateTypes', () => {
     expect(output).toContain('status: string | null;');
   });
 
-  it('Insert 타입: PK/default는 optional', () => {
-    expect(output).toContain('export interface SorvTaskInsert {');
+  it('Insert 타입: PK/default는 optional (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicSorvTaskInsert {');
     expect(output).toContain('id?: number;');
     expect(output).toContain('sorv_path: string;');
     expect(output).toContain('created_at?: string;');
   });
 
-  it('Update 타입은 Partial<Insert>', () => {
+  it('Update 타입은 Partial<Insert> (스키마 접두사 포함)', () => {
     expect(output).toContain(
-      'export type SorvTaskUpdate = Partial<SorvTaskInsert>;',
+      'export type PublicSorvTaskUpdate = Partial<PublicSorvTaskInsert>;',
     );
   });
 
-  it('여러 테이블 모두 생성', () => {
-    expect(output).toContain('export interface UserProfileRow {');
-    expect(output).toContain('export interface UserProfileInsert {');
+  it('여러 테이블 모두 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export interface PublicUserProfileRow {');
+    expect(output).toContain('export interface PublicUserProfileInsert {');
   });
 });
 
@@ -99,16 +99,16 @@ describe('generateQueryKeys', () => {
     expect(output).toContain('export const dbKeys = {');
   });
 
-  it('테이블별 all/byId 키 생성', () => {
-    expect(output).toContain("all: ['sorv_task'] as const,");
+  it('테이블별 all/byId 키 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain("all: ['public.sorv_task'] as const,");
     expect(output).toContain(
-      "byId: (id: number) => ['sorv_task', id] as const,",
+      "byId: (id: number) => ['public.sorv_task', id] as const,",
     );
   });
 
-  it('uuid PK는 string 타입', () => {
+  it('uuid PK는 string 타입 (스키마 접두사 포함)', () => {
     expect(output).toContain(
-      "byId: (id: string) => ['user_profile', id] as const,",
+      "byId: (id: string) => ['public.user_profile', id] as const,",
     );
   });
 });
@@ -122,28 +122,28 @@ describe('generateHooks', () => {
     );
   });
 
-  it('List hook 생성', () => {
-    expect(output).toContain('export function useSorvTaskList()');
-    expect(output).toContain('export function useUserProfileList()');
+  it('List hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function usePublicSorvTaskList()');
+    expect(output).toContain('export function usePublicUserProfileList()');
   });
 
-  it('ById hook 생성', () => {
-    expect(output).toContain('export function useSorvTaskById(id: number)');
-    expect(output).toContain('export function useUserProfileById(id: string)');
+  it('ById hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function usePublicSorvTaskById(id: number)');
+    expect(output).toContain('export function usePublicUserProfileById(id: string)');
   });
 
-  it('Insert hook 생성', () => {
-    expect(output).toContain('export function useInsertSorvTask()');
-    expect(output).toContain('(input: SorvTaskInsert)');
+  it('Insert hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useInsertPublicSorvTask()');
+    expect(output).toContain('(input: PublicSorvTaskInsert)');
   });
 
-  it('Update hook 생성', () => {
-    expect(output).toContain('export function useUpdateSorvTask()');
-    expect(output).toContain('SorvTaskUpdate & { id: number }');
+  it('Update hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useUpdatePublicSorvTask()');
+    expect(output).toContain('PublicSorvTaskUpdate & { id: number }');
   });
 
-  it('Delete hook 생성', () => {
-    expect(output).toContain('export function useDeleteSorvTask()');
+  it('Delete hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useDeletePublicSorvTask()');
     expect(output).toContain("'DELETE FROM public.sorv_task WHERE id = $1'");
   });
 
@@ -161,18 +161,18 @@ describe('generateHooks', () => {
 
   // ── Phase 2-6: Bulk Insert hook ──
 
-  it('BulkInsert hook 생성', () => {
-    expect(output).toContain('export function useBulkInsertSorvTask()');
-    expect(output).toContain('export function useBulkInsertUserProfile()');
+  it('BulkInsert hook 생성 (스키마 접두사 포함)', () => {
+    expect(output).toContain('export function useBulkInsertPublicSorvTask()');
+    expect(output).toContain('export function useBulkInsertPublicUserProfile()');
   });
 
   it('BulkInsert hook은 dbApi.bulkInsert 호출', () => {
     expect(output).toContain('window.electronApi.dbApi.bulkInsert(');
   });
 
-  it('BulkInsert hook은 Insert 타입 배열을 받음', () => {
-    expect(output).toContain('(rows: SorvTaskInsert[])');
-    expect(output).toContain('(rows: UserProfileInsert[])');
+  it('BulkInsert hook은 Insert 타입 배열을 받음 (스키마 접두사 포함)', () => {
+    expect(output).toContain('(rows: PublicSorvTaskInsert[])');
+    expect(output).toContain('(rows: PublicUserProfileInsert[])');
   });
 
   it('BulkInsert hook은 non-default 컬럼만 매핑', () => {
@@ -183,7 +183,7 @@ describe('generateHooks', () => {
 
   it('BulkInsert hook은 invalidateQueries 포함', () => {
     // bulkInsert도 onSuccess에서 invalidate
-    const bulkSection = output.slice(output.indexOf('useBulkInsertSorvTask'));
+    const bulkSection = output.slice(output.indexOf('useBulkInsertPublicSorvTask'));
     expect(bulkSection).toContain('qc.invalidateQueries');
   });
 });

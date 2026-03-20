@@ -14,7 +14,7 @@ export function generateHooks(tables: TableMeta[]): string {
   // import types
   const typeImports: string[] = [];
   for (const table of tables) {
-    const pascal = toPascalCase(table.name);
+    const pascal = toPascalCase(table.schema) + toPascalCase(table.name);
     typeImports.push(`${pascal}Row`, `${pascal}Insert`, `${pascal}Update`);
   }
   lines.push(`import type { ${typeImports.join(', ')} } from './types';`);
@@ -22,8 +22,8 @@ export function generateHooks(tables: TableMeta[]): string {
   lines.push('');
 
   for (const table of tables) {
-    const pascal = toPascalCase(table.name);
-    const camel = toCamelCase(table.name);
+    const pascal = toPascalCase(table.schema) + toPascalCase(table.name);
+    const camel = toCamelCase(table.schema) + toPascalCase(table.name);
     const fqn = `${table.schema}.${table.name}`; // fully qualified name
     const pk = table.columns.find((c) => c.isPrimaryKey);
     const insertCols = table.columns.filter(

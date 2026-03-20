@@ -1,5 +1,5 @@
 import type { TableMeta } from './types.js';
-import { toCamelCase } from './naming.js';
+import { toCamelCase, toPascalCase } from './naming.js';
 
 /**
  * TableMeta[] → queryKeys.ts 파일 내용 생성
@@ -13,16 +13,17 @@ export function generateQueryKeys(tables: TableMeta[]): string {
 
   for (let i = 0; i < tables.length; i++) {
     const table = tables[i];
-    const camel = toCamelCase(table.name);
+    const camel = toCamelCase(table.schema) + toPascalCase(table.name);
+    const fqn = `${table.schema}.${table.name}`;
     const pk = table.columns.find((c) => c.isPrimaryKey);
     const pkTsType = pk ? inferPkTsType(pk.pgType) : 'unknown';
 
     lines.push(`  ${camel}: {`);
-    lines.push(`    all: ['${table.name}'] as const,`);
+    lines.push(`    all: ['${fqn}'] as const,`);
 
     if (pk) {
       lines.push(
-        `    byId: (id: ${pkTsType}) => ['${table.name}', id] as const,`,
+        `    byId: (id: ${pkTsType}) => ['${fqn}', id] as const,`,
       );
     }
 
