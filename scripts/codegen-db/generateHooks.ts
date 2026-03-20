@@ -15,7 +15,10 @@ export function generateHooks(tables: TableMeta[]): string {
   const typeImports: string[] = [];
   for (const table of tables) {
     const pascal = toPascalCase(table.schema) + toPascalCase(table.name);
-    typeImports.push(`${pascal}Row`, `${pascal}Insert`, `${pascal}Update`);
+    typeImports.push(`${pascal}Row`);
+    if (!table.isView) {
+      typeImports.push(`${pascal}Insert`, `${pascal}Update`);
+    }
   }
   lines.push(`import type { ${typeImports.join(', ')} } from './types';`);
   lines.push("import { dbKeys } from './queryKeys';");
@@ -38,7 +41,7 @@ export function generateHooks(tables: TableMeta[]): string {
     lines.push(`    queryKey: dbKeys.${camel}.all,`);
     lines.push(`    queryFn: () =>`);
     lines.push(`      window.electronApi.dbApi.query<${pascal}Row>(`);
-    if (pk) {
+    if (pk && !table.isView) {
       lines.push(
         `        'SELECT * FROM ${fqn} ORDER BY ${pk.name} DESC',`,
       );
@@ -49,6 +52,9 @@ export function generateHooks(tables: TableMeta[]): string {
     lines.push('  });');
     lines.push('}');
     lines.push('');
+
+    // View는 read-only이므로 mutation hook을 생성하지 않음
+    if (table.isView) continue;
 
     // ── useXxxById ── (PK가 있을 때만)
     if (pk) {

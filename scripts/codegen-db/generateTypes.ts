@@ -25,6 +25,9 @@ export function generateTypes(tables: TableMeta[]): string {
     lines.push('}');
     lines.push('');
 
+    // View는 read-only이므로 Insert/Update 타입을 생성하지 않음
+    if (table.isView) continue;
+
     // ── Insert 타입 ──
     lines.push(`/** ${table.schema}.${table.name} — Insert 입력 */`);
     lines.push(`export interface ${pascal}Insert {`);

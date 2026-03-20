@@ -80,5 +80,61 @@
         "hasDefault": true
       }
     ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_pipeline_status",
+    "isView": true,
+    "columns": [
+      {
+        "name": "productid",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "pipeline_status",
+        "pgType": "text",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_tool_distribution",
+    "isView": true,
+    "columns": [
+      {
+        "name": "productid",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "toolid",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "task_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
   }
 ]

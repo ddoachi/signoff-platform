@@ -9,12 +9,13 @@ SELECT
   c.udt_name,
   c.is_nullable,
   c.column_default,
+  t.table_type,
   COALESCE(pk.is_pk, false) AS is_primary_key
 FROM information_schema.columns c
 JOIN information_schema.tables t
   ON t.table_schema = c.table_schema
   AND t.table_name = c.table_name
-  AND t.table_type = 'BASE TABLE'
+  AND t.table_type IN ('BASE TABLE', 'VIEW')
 LEFT JOIN (
   SELECT
     kcu.table_schema,
@@ -41,6 +42,7 @@ interface RawRow {
   udt_name: string;
   is_nullable: string;
   column_default: string | null;
+  table_type: string;
   is_primary_key: boolean;
 }
 
@@ -69,6 +71,7 @@ export async function introspect(
           schema: row.table_schema,
           name: row.table_name,
           columns: [],
+          isView: row.table_type === 'VIEW',
         });
       }
 
