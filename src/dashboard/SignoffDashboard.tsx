@@ -2,7 +2,7 @@
 // Signoff Dashboard — Aggregated Statistics
 //
 // 6개의 차트로 전체 signoff pipeline 상태를 한눈에 보여줍니다.
-// recharts 라이브러리 필요: npm install recharts
+// Design tokens from signoff-design-system applied.
 // ============================================================
 
 import React from 'react';
@@ -14,6 +14,13 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import {
+  fontFamilies,
+  statusColors,
+  radii,
+  shadows,
+  mantineSpacing,
+} from '@signoff/design-system/src/tokens';
+import {
   useSignoffPipeline,
   useLauncherStatus,
   useReviewProgress,
@@ -22,15 +29,68 @@ import {
   useOwnerWorkload,
 } from './hooks';
 
-// ── Color Palette ──────────────────────────────────────────
+// ── Design Tokens (from @signoff/design-system) ────────────
+
+const fontFamily = fontFamilies.sans;
+const sc = statusColors.light;
+
+const colors = {
+  // Status (from statusColors)
+  pass: sc.pass,
+  fail: sc.fail,
+  running: sc.running,
+  pending: sc.pending,
+  error: sc.error,
+  skipped: sc.skipped,
+  na: sc.na,
+  // Surface / Layout — Minimal Flat Light theme values
+  // (theme colors are not exported as standalone tokens,
+  //  so we keep these in sync with the theme definition)
+  background: '#FFFFFF',
+  surface: '#F9FAFB',
+  surfaceHover: '#F3F4F6',
+  border: '#D1D5DB',
+  borderSubtle: '#E5E7EB',
+  text: '#111827',
+  textSecondary: '#4B5563',
+  textMuted: '#9CA3AF',
+  primary: '#2563EB',
+  primarySubtle: '#EFF6FF',
+};
+
+const spacing = {
+  xs: parseInt(mantineSpacing.xs) * 16,   // 8px
+  sm: parseInt(mantineSpacing.sm) * 16,   // 12px
+  md: parseInt(mantineSpacing.md) * 16,   // 16px
+  lg: parseInt(mantineSpacing.lg) * 16,   // 24px
+  xl: parseInt(mantineSpacing.xl) * 16,   // 32px
+} as const;
+
+/** CSS border-radius (string, for style props) */
+const radius = {
+  sm: radii.sm,     // '0.25rem'
+  md: radii.md,     // '0.375rem'
+  lg: radii.lg,     // '0.5rem'
+  xl: radii.xl,     // '0.75rem'
+};
+
+/** Numeric px values for recharts props (cornerRadius, bar radius) */
+const radiusPx = { sm: 4, md: 6, lg: 8, xl: 12 } as const;
+
+const shadow = {
+  sm: shadows.sm,
+  md: shadows.md,
+};
+
+// ── Chart Color Mappings ───────────────────────────────────
 
 const PIPELINE_COLORS: Record<string, string> = {
-  launcher_fail: '#ef4444',       // red
-  launcher_running: '#f59e0b',    // amber
-  review_pending: '#a78bfa',      // violet
-  review_in_progress: '#3b82f6',  // blue
-  review_complete: '#22c55e',     // green
-  unknown: '#9ca3af',             // gray
+  launcher_fail: colors.fail,
+  launcher_running: colors.pending,
+  review_pending: colors.skipped,
+  review_in_progress: colors.running,
+  review_complete: colors.pass,
+  unknown: colors.na,
 };
 
 const PIPELINE_LABELS: Record<string, string> = {
@@ -43,49 +103,51 @@ const PIPELINE_LABELS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  PASS: '#22c55e',
-  FAIL: '#ef4444',
-  ERROR: '#dc2626',
-  RUNNING: '#f59e0b',
+  PASS: colors.pass,
+  FAIL: colors.fail,
+  ERROR: colors.error,
+  RUNNING: colors.running,
 };
 
 const STACK_COLORS = {
-  pass: '#22c55e',
-  fail: '#ef4444',
-  running: '#f59e0b',
+  pass: colors.pass,
+  fail: colors.fail,
+  running: colors.running,
 };
 
 // ── Shared Styles ──────────────────────────────────────────
 
 const cardStyle: React.CSSProperties = {
-  background: '#fff',
-  borderRadius: 12,
-  padding: 24,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
-  border: '1px solid #e5e7eb',
+  fontFamily,
+  background: colors.background,
+  borderRadius: radius.xl,
+  padding: spacing.lg,
+  boxShadow: shadow.sm,
+  border: `1px solid ${colors.borderSubtle}`,
 };
 
 const titleStyle: React.CSSProperties = {
-  fontSize: 14,
-  fontWeight: 600,
-  color: '#374151',
-  marginBottom: 16,
-  letterSpacing: '-0.01em',
+  fontFamily,
+  fontSize: 14,       // bodyMd
+  fontWeight: 600,     // semibold
+  color: colors.textSecondary,
+  marginBottom: spacing.md,
+  letterSpacing: '0.01em',  // label
 };
 
 const gridStyle: React.CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))',
-  gap: 20,
-  padding: 20,
+  gap: spacing.lg,
+  padding: spacing.lg,
 };
 
 const headerStyle: React.CSSProperties = {
-  fontSize: 20,
-  fontWeight: 700,
-  color: '#111827',
-  padding: '20px 20px 0',
-  letterSpacing: '-0.02em',
+  fontFamily,
+  fontSize: 20,        // h3
+  fontWeight: 600,
+  color: colors.text,
+  padding: `${spacing.lg}px ${spacing.lg}px 0`,
 };
 
 // ── Custom Tooltip ─────────────────────────────────────────
@@ -94,22 +156,28 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: '#fff',
-      border: '1px solid #e5e7eb',
-      borderRadius: 8,
-      padding: '8px 12px',
-      fontSize: 12,
-      boxShadow: '0 4px 6px rgba(0,0,0,0.07)',
+      fontFamily,
+      background: colors.background,
+      border: `1px solid ${colors.borderSubtle}`,
+      borderRadius: radius.lg,
+      padding: `${spacing.xs}px ${spacing.sm}px`,
+      fontSize: 12,       // bodySm
+      boxShadow: shadow.md,
     }}>
-      {label && <div style={{ fontWeight: 600, marginBottom: 4 }}>{label}</div>}
+      {label && <div style={{ fontWeight: 600, marginBottom: spacing.xs / 2, color: colors.text }}>{label}</div>}
       {payload.map((p: any, i: number) => (
-        <div key={i} style={{ color: p.color, lineHeight: 1.6 }}>
+        <div key={i} style={{ color: p.color, lineHeight: 1.5 }}>
           {p.name}: {p.value}
         </div>
       ))}
     </div>
   );
 };
+
+// ── Recharts shared tick style ─────────────────────────────
+
+const tickStyle = { fontFamily, fontSize: 11, fill: colors.textMuted };
+const legendStyle = { fontFamily, fontSize: 12 };
 
 // ── 1. Pipeline Overview (Donut) ───────────────────────────
 
@@ -141,14 +209,14 @@ function PipelineOverviewChart() {
             {data.map((entry) => (
               <Cell
                 key={entry.stage}
-                fill={PIPELINE_COLORS[entry.stage] ?? '#9ca3af'}
+                fill={PIPELINE_COLORS[entry.stage] ?? colors.na}
               />
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
         </PieChart>
       </ResponsiveContainer>
-      <div style={{ textAlign: 'center', fontSize: 13, color: '#6b7280' }}>
+      <div style={{ textAlign: 'center', fontSize: 12, color: colors.textMuted }}>
         Total: {total} tasks
       </div>
     </div>
@@ -179,7 +247,7 @@ function LauncherStatusChart() {
             {data.map((entry) => (
               <Cell
                 key={entry.status}
-                fill={STATUS_COLORS[entry.status] ?? '#9ca3af'}
+                fill={STATUS_COLORS[entry.status] ?? colors.na}
               />
             ))}
           </Pie>
@@ -198,7 +266,7 @@ function ReviewProgressChart() {
 
   const progress = data[0];
   const gaugeData = [
-    { name: 'Waiver', value: progress.waiver_pct, fill: '#22c55e' },
+    { name: 'Waiver', value: progress.waiver_pct, fill: colors.pass },
   ];
 
   return (
@@ -216,19 +284,19 @@ function ReviewProgressChart() {
         >
           <RadialBar
             dataKey="value"
-            cornerRadius={8}
-            background={{ fill: '#f3f4f6' }}
+            cornerRadius={radiusPx.lg}
+            background={{ fill: colors.surfaceHover }}
           />
         </RadialBarChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', marginTop: -60 }}>
-        <div style={{ fontSize: 36, fontWeight: 700, color: '#111827' }}>
+        <div style={{ fontFamily, fontSize: 36, fontWeight: 700, color: colors.text }}>
           {progress.waiver_pct}%
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
+        <div style={{ fontFamily, fontSize: 12, color: colors.textSecondary, marginTop: spacing.xs / 2 }}>
           {progress.total_waiver.toLocaleString()} / {progress.total_items.toLocaleString()} items waived
         </div>
-        <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
+        <div style={{ fontFamily, fontSize: 11, color: colors.textMuted, marginTop: 2 }}>
           Pending: {progress.total_pending.toLocaleString()} | Fixed: {progress.total_fixed.toLocaleString()}
         </div>
       </div>
@@ -252,26 +320,18 @@ function DailyTrendChart() {
       <div style={titleStyle}>Daily Launcher Trend (Last 14 Days)</div>
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={formatted}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis
-            dataKey="run_date"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-          />
-          <YAxis tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} />
+          <XAxis dataKey="run_date" tick={tickStyle} tickLine={false} />
+          <YAxis tick={tickStyle} tickLine={false} axisLine={false} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            iconType="circle"
-            iconSize={8}
-            wrapperStyle={{ fontSize: 12 }}
-          />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Area
             type="monotone"
             dataKey="pass_count"
             name="Pass"
             stackId="1"
-            stroke="#22c55e"
-            fill="#22c55e"
+            stroke={colors.pass}
+            fill={colors.pass}
             fillOpacity={0.6}
           />
           <Area
@@ -279,8 +339,8 @@ function DailyTrendChart() {
             dataKey="fail_count"
             name="Fail"
             stackId="1"
-            stroke="#ef4444"
-            fill="#ef4444"
+            stroke={colors.fail}
+            fill={colors.fail}
             fillOpacity={0.6}
           />
           <Area
@@ -288,8 +348,8 @@ function DailyTrendChart() {
             dataKey="running_count"
             name="Running"
             stackId="1"
-            stroke="#f59e0b"
-            fill="#f59e0b"
+            stroke={colors.running}
+            fill={colors.running}
             fillOpacity={0.6}
           />
         </AreaChart>
@@ -309,24 +369,14 @@ function CellSummaryChart() {
       <div style={titleStyle}>Cell-wise Status Summary</div>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} layout="vertical">
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 11 }} tickLine={false} />
-          <YAxis
-            type="category"
-            dataKey="cellname"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            width={70}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} horizontal={false} />
+          <XAxis type="number" tick={tickStyle} tickLine={false} />
+          <YAxis type="category" dataKey="cellname" tick={tickStyle} tickLine={false} width={70} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            iconType="circle"
-            iconSize={8}
-            wrapperStyle={{ fontSize: 12 }}
-          />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Bar dataKey="pass_count" name="Pass" stackId="a" fill={STACK_COLORS.pass} radius={[0, 0, 0, 0]} />
           <Bar dataKey="fail_count" name="Fail" stackId="a" fill={STACK_COLORS.fail} />
-          <Bar dataKey="running_count" name="Running" stackId="a" fill={STACK_COLORS.running} radius={[0, 4, 4, 0]} />
+          <Bar dataKey="running_count" name="Running" stackId="a" fill={STACK_COLORS.running} radius={[0, radiusPx.sm, radiusPx.sm, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -344,24 +394,14 @@ function OwnerWorkloadChart() {
       <div style={titleStyle}>Owner Workload</div>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data} layout="vertical">
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
-          <XAxis type="number" tick={{ fontSize: 11 }} tickLine={false} />
-          <YAxis
-            type="category"
-            dataKey="owner"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            width={70}
-          />
+          <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} horizontal={false} />
+          <XAxis type="number" tick={tickStyle} tickLine={false} />
+          <YAxis type="category" dataKey="owner" tick={tickStyle} tickLine={false} width={70} />
           <Tooltip content={<CustomTooltip />} />
-          <Legend
-            iconType="circle"
-            iconSize={8}
-            wrapperStyle={{ fontSize: 12 }}
-          />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Bar dataKey="pass_count" name="Pass" stackId="a" fill={STACK_COLORS.pass} />
           <Bar dataKey="fail_count" name="Fail" stackId="a" fill={STACK_COLORS.fail} />
-          <Bar dataKey="running_count" name="Running" stackId="a" fill={STACK_COLORS.running} radius={[0, 4, 4, 0]} />
+          <Bar dataKey="running_count" name="Running" stackId="a" fill={STACK_COLORS.running} radius={[0, radiusPx.sm, radiusPx.sm, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -373,7 +413,7 @@ function OwnerWorkloadChart() {
 function ChartSkeleton() {
   return (
     <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 340 }}>
-      <div style={{ color: '#9ca3af', fontSize: 13 }}>Loading...</div>
+      <div style={{ color: colors.textMuted, fontSize: 12 }}>Loading...</div>
     </div>
   );
 }
@@ -382,9 +422,9 @@ function ChartSkeleton() {
 
 export default function SignoffDashboard() {
   return (
-    <div style={{ background: '#f9fafb', minHeight: '100vh' }}>
+    <div style={{ fontFamily, background: colors.surface, minHeight: '100vh' }}>
       <div style={headerStyle}>Signoff Dashboard</div>
-      <div style={{ padding: '4px 20px 0', fontSize: 13, color: '#6b7280' }}>
+      <div style={{ fontFamily, padding: `${spacing.xs / 2}px ${spacing.lg}px 0`, fontSize: 14, color: colors.textSecondary }}>
         Aggregated statistics across all signoff tasks
       </div>
       <div style={gridStyle}>
