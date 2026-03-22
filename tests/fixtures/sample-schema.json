@@ -136,5 +136,215 @@
         "hasDefault": false
       }
     ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_signoff_pipeline",
+    "isView": true,
+    "columns": [
+      {
+        "name": "stage",
+        "pgType": "text",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "task_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_launcher_status",
+    "isView": true,
+    "columns": [
+      {
+        "name": "status",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "task_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_review_progress",
+    "isView": true,
+    "columns": [
+      {
+        "name": "total_pending",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_fixed",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_waiver",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_items",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "waiver_pct",
+        "pgType": "numeric",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_daily_trend",
+    "isView": true,
+    "columns": [
+      {
+        "name": "run_date",
+        "pgType": "date",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "pass_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "fail_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "running_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_cell_summary",
+    "isView": true,
+    "columns": [
+      {
+        "name": "cellname",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "pass_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "fail_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "running_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
+  },
+  {
+    "schema": "dashboard",
+    "name": "v_owner_workload",
+    "isView": true,
+    "columns": [
+      {
+        "name": "owner",
+        "pgType": "varchar",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "total_tasks",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "pass_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "fail_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      },
+      {
+        "name": "running_count",
+        "pgType": "int8",
+        "nullable": true,
+        "isPrimaryKey": false,
+        "hasDefault": false
+      }
+    ]
   }
 ]
