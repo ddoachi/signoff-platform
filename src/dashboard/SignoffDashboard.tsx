@@ -160,14 +160,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       background: colors.background,
       border: `1px solid ${colors.borderSubtle}`,
       borderRadius: radius.lg,
-      padding: `${spacing.xs}px ${spacing.sm}px`,
-      fontSize: 12,       // bodySm
+      padding: `${spacing.sm}px ${spacing.md}px`,
+      fontSize: 14,
       boxShadow: shadow.md,
     }}>
-      {label && <div style={{ fontWeight: 600, marginBottom: spacing.xs / 2, color: colors.text }}>{label}</div>}
+      {label && <div style={{ fontWeight: 700, marginBottom: spacing.xs / 2, color: colors.text, fontSize: 14 }}>{label}</div>}
       {payload.map((p: any, i: number) => (
-        <div key={i} style={{ color: p.color, lineHeight: 1.5 }}>
-          {p.name}: {p.value}
+        <div key={i} style={{ color: p.color, lineHeight: 1.6, fontWeight: 500 }}>
+          {p.name}: <strong>{p.value}</strong>
         </div>
       ))}
     </div>
@@ -176,8 +176,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 // ── Recharts shared tick style ─────────────────────────────
 
-const tickStyle = { fontFamily, fontSize: 11, fill: colors.textMuted };
-const legendStyle = { fontFamily, fontSize: 12 };
+const tickStyle = { fontFamily, fontSize: 11, fontWeight: 500, fill: colors.textSecondary };
+const legendStyle = { fontFamily, fontSize: 12, fontWeight: 600, color: colors.textSecondary };
+const pieLabelStyle = { fontFamily, fontSize: 12, fontWeight: 600, fill: colors.text };
 
 // ── 1. Pipeline Overview (Donut) ───────────────────────────
 
@@ -198,12 +199,14 @@ function PipelineOverviewChart() {
             nameKey="stage"
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={100}
+            innerRadius={50}
+            outerRadius={85}
             paddingAngle={2}
-            label={({ stage, task_count }) =>
-              `${PIPELINE_LABELS[stage] ?? stage} (${task_count})`
-            }
+            label={({ stage, task_count, x, y, textAnchor }) => (
+              <text x={x} y={y} textAnchor={textAnchor} style={pieLabelStyle}>
+                {PIPELINE_LABELS[stage] ?? stage} ({task_count})
+              </text>
+            )}
             labelLine={{ strokeWidth: 1 }}
           >
             {data.map((entry) => (
@@ -213,7 +216,7 @@ function PipelineOverviewChart() {
               />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
         </PieChart>
       </ResponsiveContainer>
       <div style={{ textAlign: 'center', fontSize: 12, color: colors.textMuted }}>
@@ -240,8 +243,12 @@ function LauncherStatusChart() {
             nameKey="status"
             cx="50%"
             cy="50%"
-            outerRadius={100}
-            label={({ status, task_count }) => `${status} (${task_count})`}
+            outerRadius={85}
+            label={({ status, task_count, x, y, textAnchor }) => (
+              <text x={x} y={y} textAnchor={textAnchor} style={pieLabelStyle}>
+                {status} ({task_count})
+              </text>
+            )}
             labelLine={{ strokeWidth: 1 }}
           >
             {data.map((entry) => (
@@ -251,7 +258,7 @@ function LauncherStatusChart() {
               />
             ))}
           </Pie>
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
         </PieChart>
       </ResponsiveContainer>
     </div>
@@ -323,7 +330,7 @@ function DailyTrendChart() {
           <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} />
           <XAxis dataKey="run_date" tick={tickStyle} tickLine={false} />
           <YAxis tick={tickStyle} tickLine={false} axisLine={false} />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Area
             type="monotone"
@@ -372,7 +379,7 @@ function CellSummaryChart() {
           <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} horizontal={false} />
           <XAxis type="number" tick={tickStyle} tickLine={false} />
           <YAxis type="category" dataKey="cellname" tick={tickStyle} tickLine={false} width={70} />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Bar dataKey="pass_count" name="Pass" stackId="a" fill={STACK_COLORS.pass} radius={[0, 0, 0, 0]} />
           <Bar dataKey="fail_count" name="Fail" stackId="a" fill={STACK_COLORS.fail} />
@@ -397,7 +404,7 @@ function OwnerWorkloadChart() {
           <CartesianGrid strokeDasharray="3 3" stroke={colors.borderSubtle} horizontal={false} />
           <XAxis type="number" tick={tickStyle} tickLine={false} />
           <YAxis type="category" dataKey="owner" tick={tickStyle} tickLine={false} width={70} />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} isAnimationActive={false} cursor={{ fill: 'rgba(0, 0, 0, 0.04)' }} />
           <Legend iconType="circle" iconSize={8} wrapperStyle={legendStyle} />
           <Bar dataKey="pass_count" name="Pass" stackId="a" fill={STACK_COLORS.pass} />
           <Bar dataKey="fail_count" name="Fail" stackId="a" fill={STACK_COLORS.fail} />
